@@ -3,6 +3,7 @@ package com.example.tictactoe;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -10,67 +11,83 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Objects;
+import java.util.ResourceBundle;
 
-public class Controller {
-    @FXML private GridPane gridPane;
-    @FXML private Label myLabel;
+public class Controller implements Initializable {
+    @FXML private BorderPane borderPane;
+    @FXML private ImageView moveDisplay;
+    @FXML private Label endLabel;
+    @FXML private Label displayScoreX, displayScoreO;
 
-    private final int[] gridArray = new int[9];
+    private int[] gridArray;
+    private int moveCount;
+    private static int scoreX, scoreO;
+    private String currPlayer;
 
-    private final Image moveX = new Image(Objects.requireNonNull(getClass().getResourceAsStream("X.png")));
-    private final Image moveO = new Image(Objects.requireNonNull(getClass().getResourceAsStream("O.png")));
-    private Image currMove = moveX;
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        this.gridArray = new int[9];
+        if (displayScoreX != null) { displayScoreX.setText(Integer.toString(scoreX)); }
+        if (displayScoreO != null) { displayScoreO.setText(Integer.toString(scoreO)); }
+    }
 
-    private Stage stage;
-    private Scene scene;
-    private Parent root;
-
-    private int moveCount = 0;
-
-    public void handleMove(MouseEvent e) throws IOException {
-        ImageView curr = ((ImageView) e.getTarget());
-        if (curr.getImage() == null) {
-            curr.setImage(currMove);
-            curr.setTranslateX(3);
-            curr.setTranslateY(3);
-            currMove = (currMove == moveX ? moveO : moveX);
-            gridArray[gridPane.getChildren().indexOf(curr)] = (currMove == moveX) ? 1 : 2;
+    @FXML private void handleMove(MouseEvent e) throws IOException {
+        ImageView gridCell = (ImageView) e.getTarget();
+        if (gridCell.getImage() == null) {
+            gridCell.setImage(moveDisplay.getImage());
+            updateMove();
+            int cellIndex = ((GridPane) borderPane.getCenter()).getChildren().indexOf(gridCell);
+            gridArray[cellIndex] = (currPlayer.equals("X")) ? 1 : 2;
             moveCount++;
         }
-        if (winCheck() || moveCount >= 9) {
-            switchToScene2(e);
+        if (checkForWin() || moveCount >= 9) {
+            setEndScene();
         }
     }
 
-    public void restart(ActionEvent e) throws IOException {
-        root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("Scene.fxml")));
-        stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
-        scene = new Scene(root);
+    @FXML private void restart(ActionEvent e) throws IOException {
+        Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("GameScene.fxml")));
+        Scene scene = new Scene(root);
+        Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
         stage.setScene(scene);
-        stage.show();
     }
 
-    private void switchToScene2(MouseEvent e) throws IOException {
-        root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("Scene2.fxml")));
-        myLabel = (Label) root.getChildrenUnmodifiable().get(0);
+    private void setEndScene() throws IOException {
+        Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("EndScene.fxml")));
+        endLabel = (Label) root.getChildrenUnmodifiable().get(0);
         if (moveCount >= 9) {
-            myLabel.setText("Draw!");
+            endLabel.setText("Draw!");
         } else {
-            myLabel.setText(((currMove == moveX) ? "Player 2" : "Player 1") + " Wins!");
+            endLabel.setText(((currPlayer.equals("X")) ? "Player #1" : "Player #2") + " Wins!");
+            if (currPlayer.equals("X")) {
+                displayScoreX.setText(Integer.toString(++scoreX));
+            } else {
+                displayScoreO.setText(Integer.toString(++scoreO));
+            }
         }
-        myLabel.setStyle("-fx-border-color: black");
-        stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
-        scene = new Scene(root);
-        stage.setScene(scene);
-        stage.show();
+        borderPane.setCenter(root);
     }
 
-    private boolean winCheck() {
+    private void updateMove() {
+        String relativeURL = "/images/";
+        if (currPlayer == null || currPlayer.equals("O")) {
+            currPlayer = "X";
+            relativeURL += "O.png";
+        } else {
+            currPlayer = "O";
+            relativeURL += "X.png";
+        }
+        moveDisplay.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream(relativeURL))));
+    }
+
+    private boolean checkForWin() {
         // Rows
         for (int i = 0; i < 7; i += 3) {
             if ((gridArray[i] == gridArray[i + 1]) && (gridArray[i + 1] == gridArray[i + 2])) {
