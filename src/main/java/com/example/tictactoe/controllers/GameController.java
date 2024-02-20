@@ -1,10 +1,12 @@
 package com.example.tictactoe.controllers;
 
-import com.example.tictactoe.Type;
+import com.example.tictactoe.Helper;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -18,13 +20,15 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class GameController implements Initializable {
     @FXML private BorderPane borderPane;
     @FXML private ImageView moveDisplay;
-    @FXML private Label endLabel, displayScoreX, displayScoreO;
+    @FXML private Label displayScoreX, displayScoreO;
 
     private int[] gridArray;
     private int moveCount;
@@ -33,9 +37,9 @@ public class GameController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        if (Helper.getGamePane() == null) { Helper.setGamePane(borderPane); }
         this.gridArray = new int[9];
-        if (displayScoreX != null) { displayScoreX.setText(Integer.toString(scoreX)); }
-        if (displayScoreO != null) { displayScoreO.setText(Integer.toString(scoreO)); }
+        updateScores();
     }
 
     @FXML private void handleMove(MouseEvent e) throws IOException {
@@ -46,33 +50,32 @@ public class GameController implements Initializable {
             int cellIndex = ((GridPane) borderPane.getCenter()).getChildren().indexOf(gridCell);
             gridArray[cellIndex] = (currPlayer.equals("X")) ? 1 : 2;
             moveCount++;
-        }
-        if (checkForWin() || moveCount >= 9) {
-            setEndScene();
-        }
-    }
 
-    @FXML private void restart(ActionEvent e) throws IOException {
-        Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("GameScreen.fxml")));
-        Scene scene = new Scene(root);
-        Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
-        stage.setScene(scene);
-    }
-
-    private void setEndScene() throws IOException {
-        Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("EndScreen.fxml")));
-        endLabel = (Label) root.getChildrenUnmodifiable().get(0);
-        if (moveCount >= 9) {
-            endLabel.setText("Draw!");
-        } else {
-            endLabel.setText(((currPlayer.equals("X")) ? "Player #1" : "Player #2") + " Wins!");
-            if (currPlayer.equals("X")) {
-                displayScoreX.setText(Integer.toString(++scoreX));
-            } else {
-                displayScoreO.setText(Integer.toString(++scoreO));
+            int val = checker();
+            if (val != -1) {
+                String phrase = "Draw";
+                if (val == 1 && currPlayer.equals("X")) {
+                    phrase = "Player #1";
+                    scoreX += 1;
+                } else if (val == 1 && currPlayer.equals("O")) {
+                    phrase = "Phrase #2";
+                    scoreO += 1;
+                }
+                updateScores();
+                setEndScene(phrase);
             }
         }
-        borderPane.setCenter(root);
+    }
+
+    private void updateScores() {
+        displayScoreX.setText(Integer.toString(scoreX));
+        displayScoreO.setText(Integer.toString(scoreO));
+    }
+
+    private void setEndScene(String phrase) throws IOException {
+        FXMLLoader loader = Helper.changeGameScreen("EndScreen.fxml");
+        EndController controller = loader.getController();
+        controller.setLabel(phrase);
     }
 
     private void updateMove() {
@@ -87,26 +90,30 @@ public class GameController implements Initializable {
         moveDisplay.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream(relativeURL))));
     }
 
-    private boolean checkForWin() {
-        // Rows
-        for (int i = 0; i < 7; i += 3) {
-            if ((gridArray[i] == gridArray[i + 1]) && (gridArray[i + 1] == gridArray[i + 2])) {
-                return gridArray[i] != 0;
+    private int checker() {
+        for (int i = 0, r = 0; i < 3; i++, r += 2) {
+            if (gridArray[i+r] == gridArray[i+r+1] &&
+                gridArray[i+r+1] == gridArray[i+r+2] &&
+                gridArray[i+r] != 0) {
+                return 1;
+            }
+            if (gridArray[i] == gridArray[i+3] &&
+                gridArray[i+3] == gridArray[i+6] &&
+                gridArray[i] != 0) {
+                return 1;
             }
         }
-        // Columns
-        for (int i = 0; i < 3; i++) {
-            if ((gridArray[i] == gridArray[i + 3]) && (gridArray[i + 3] == gridArray[i + 6])) {
-                return gridArray[i] != 0;
-            }
+        if ((gridArray[0] == gridArray[4] &&
+            gridArray[4] == gridArray[8] &&
+            gridArray[0] != 0) ||
+            ((gridArray[2] == gridArray[4] &&
+            gridArray[4] == gridArray[6] &&
+            gridArray[6] != 0))) {
+            return 1;
         }
-        // Diagonals
-        int j = 4;
-        for (int i = 0; j > 1; i += 2, j -= 2) {
-            if ((gridArray[i] == gridArray[i + j]) && (gridArray[i + j] == gridArray[i + j + j])) {
-                return gridArray[i] != 0;
-            }
+        if (moveCount >= 9) {
+            return 0;
         }
-        return false;
+        return -1;
     }
 }
