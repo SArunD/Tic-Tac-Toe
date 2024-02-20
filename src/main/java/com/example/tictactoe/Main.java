@@ -1,23 +1,13 @@
 package com.example.tictactoe;
 
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
-
-import java.io.IOException;
-import java.util.Objects;
 
 public class Main extends Application {
     @Override
-    public void start(Stage stage) throws IOException {
-        Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("GameScene.fxml")));
-        Scene scene = new Scene(root);
-        stage.setScene(scene);
-        stage.setTitle("Tic-Tac-Toe");
-        stage.setResizable(false);
-        stage.show();
+    public void start(Stage stage) throws Exception {
+        Helper.type = Type.UNSELECTED;
+        Helper.changeScreen(stage, "StartScreen.fxml", "Tic-Tac-Toe");
     }
 
     public static void main(String[] args) {

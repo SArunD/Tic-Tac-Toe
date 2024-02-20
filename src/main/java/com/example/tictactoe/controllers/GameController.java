@@ -1,5 +1,6 @@
-package com.example.tictactoe;
+package com.example.tictactoe.controllers;
 
+import com.example.tictactoe.Type;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -20,11 +21,10 @@ import java.net.URL;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
-public class Controller implements Initializable {
+public class GameController implements Initializable {
     @FXML private BorderPane borderPane;
     @FXML private ImageView moveDisplay;
-    @FXML private Label endLabel;
-    @FXML private Label displayScoreX, displayScoreO;
+    @FXML private Label endLabel, displayScoreX, displayScoreO;
 
     private int[] gridArray;
     private int moveCount;
@@ -53,14 +53,14 @@ public class Controller implements Initializable {
     }
 
     @FXML private void restart(ActionEvent e) throws IOException {
-        Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("GameScene.fxml")));
+        Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("GameScreen.fxml")));
         Scene scene = new Scene(root);
         Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
         stage.setScene(scene);
     }
 
     private void setEndScene() throws IOException {
-        Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("EndScene.fxml")));
+        Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("EndScreen.fxml")));
         endLabel = (Label) root.getChildrenUnmodifiable().get(0);
         if (moveCount >= 9) {
             endLabel.setText("Draw!");
