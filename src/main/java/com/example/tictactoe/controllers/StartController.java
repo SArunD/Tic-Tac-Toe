@@ -1,7 +1,7 @@
 package com.example.tictactoe.controllers;
 
 import com.example.tictactoe.Helper;
-import com.example.tictactoe.Type;
+import com.example.tictactoe.enums.Type;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;

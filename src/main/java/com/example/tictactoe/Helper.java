@@ -1,6 +1,6 @@
 package com.example.tictactoe;
 
-import javafx.fxml.FXML;
+import com.example.tictactoe.enums.Type;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -16,7 +16,7 @@ public class Helper {
     public static BorderPane getGamePane() { return gamePane; }
     public static void setGamePane(BorderPane pane) { gamePane = pane; }
 
-    public static FXMLLoader changeScreen(Stage stage, String screenName, String stageTitle) {
+    public static void changeScreen(Stage stage, String screenName, String stageTitle) {
         FXMLLoader loader = null;
         try {
             loader = new FXMLLoader(Helper.class.getResource(screenName));
@@ -30,7 +30,6 @@ public class Helper {
         } catch (IOException e) {
             e.printStackTrace(System.out);
         }
-        return loader;
     }
 
     public static FXMLLoader changeGameScreen(String path) {

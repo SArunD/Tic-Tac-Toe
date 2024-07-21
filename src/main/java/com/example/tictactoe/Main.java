@@ -1,5 +1,6 @@
 package com.example.tictactoe;
 
+import com.example.tictactoe.enums.Type;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
